@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc"
+	xmlns:dubbo="http://dubbo.apache.org/schema/dubbo"
+	xsi:schemaLocation="http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.3.xsd
+		http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.3.xsd
+		http://dubbo.apache.org/schema/dubbo http://dubbo.apache.org/schema/dubbo/dubbo.xsd
+		http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
+
+	<context:annotation-config />
+	<context:component-scan
+		base-package="com.edu118" />
+	<mvc:annotation-driven />
+	<mvc:default-servlet-handler />
+
+	<bean id="multipartResolver"
+		class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+		<property name="maxUploadSize" value="102400" />
+		<property name="maxInMemorySize" value="2097152" />	
+	</bean>
+	
+	<!-- 加载goPages配置文件 -->
+	<bean id="messageSource"
+		 class="org.springframework.context.support.ResourceBundleMessageSource">
+		<property name="basenames">
+			<array>
+				<value>config/goPages</value>
+			</array>
+		</property>
+		<property name="defaultEncoding" value="UTF-8" />
+		<property name="cacheSeconds" value="120" />
+	</bean>
+
+	<!-- shiro注解启用 -->
+	<bean
+		class="org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator"
+		depends-on="lifecycleBeanPostProcessor">
+		<property name="proxyTargetClass" value="true" />
+	</bean>
+	<bean
+		class="org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor">
+		<property name="securityManager" ref="securityManager" />
+	</bean>
+	
+	<!-- Dubbo的配置 -->
+	<!-- 提供方应用信息，用于计算依赖关系 -->
+	<dubbo:application name="travel-user-web" />
+	
+	<!-- 使用multicast广播注册中心暴露服务地址 -->
+	<dubbo:registry address="zookeeper://192.168.198.128:2181" />
+	
+	<!-- 用dubbo协议在20880端口暴露服务 -->
+	<dubbo:protocol name="dubbo" port="20880" />
+	
+	<!-- 开启Dubbo注解应用 -->
+	<dubbo:annotation package="com.edu118.service" />
+	
+	<!-- 声明需要暴露的服务接口 -->
+<!-- 	<dubbo:service interface="com.edu118.service.IEmployeeService"
+		ref="employeeService" /> -->
+	<!-- 如果不使用注解进行注入，那么就要通过配置文件注入 -->
+	<!-- <bean id="employeeService" class="com.edu118.service.IEmployeeService" /> -->
+</beans>
